@@ -34,6 +34,8 @@ public class Main {
               .filter(message -> message.getContent().startsWith("!migrate"))
               .publishOn(Schedulers.boundedElastic())
               .flatMap(message -> message.getChannel().flatMap(channel -> {
+                // Reload config after each command before attempting to migrate
+                Config.INSTANCE.reload(Paths.get("config.yml").toAbsolutePath());
                 // Monke Solutions
                 if (!message.getContent().contains(" ")) {
                   return channel.createMessage(
@@ -56,7 +58,7 @@ public class Main {
                 String[] commandArgs;
                 String databaseUrl;
                 int offset;
-                if (message.getAttachments().size() > 0) {
+                if (!message.getAttachments().isEmpty()) {
                   offset = 0;
                   commandArgs = message.getContent().split(" ", 3);
                   databaseUrl = message.getAttachments().get(0).getUrl();
